@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocery Management System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .button-group button {
+            flex: 1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        .action-buttons button {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .edit-btn {
+            background-color: #f39c12;
+        }
+        .edit-btn:hover {
+            background-color: #e67e22;
+        }
+        .delete-btn {
+            background-color: #e74c3c;
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .hidden {
+            display: none;
+        }
+        .export-import {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .export-import button {
+            flex: 1;
+        }
+        .backup-btn {
+            background-color: #2ecc71;
+        }
+        .backup-btn:hover {
+            background-color: #27ae60;
+        }
+        .restore-btn {
+            background-color: #9b59b6;
+        }
+        .restore-btn:hover {
+            background-color: #8e44ad;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Grocery Management System</h1>
+        
+        <div class="form-section">
+            <form id="groceryForm">
+                <input type="hidden" id="itemId">
+                <div class="form-group">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" required>
+                </div>
+                <div class="form-group">
+                    <label for="itemPrice">Price</label>
+                    <input type="number" id="itemPrice" min="0.01" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="itemQuantity">Quantity</label>
+                    <input type="number" id="itemQuantity" min="0" required>
+                </div>
+                <div class="button-group">
+                    <button type="submit" id="saveBtn">Save Item</button>
+                    <button type="button" id="clearBtn">Clear Form</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search items...">
+        </div>
+
+        <div class="table-section">
+            <table id="groceryTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Items will be added here dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="export-import">
+            <button id="exportBtn" class="backup-btn">Export Data</button>
+            <button id="importBtn" class="restore-btn">Import Data</button>
+            <input type="file" id="fileInput" accept=".json" style="display: none;">
+        </div>
+    </div>
+
+    <script>
+        // Grocery items array
+        let groceryItems = [];
+        let currentId = 1;
+
+        // DOM elements
+        const form = document.getElementById('groceryForm');
+        const tableBody = document.getElementById('tableBody');
+        const searchInput = document.getElementById('searchInput');
+        const itemIdInput = document.getElementById('itemId');
+        const itemNameInput = document.getElementById('itemName');
+        const itemPriceInput = document.getElementById('itemPrice');
+        const itemQuantityInput = document.getElementById('itemQuantity');
+        const saveBtn = document.getElementById('saveBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const fileInput = document.getElementById('fileInput');
+
+        // Initialize the application
+        function initApp() {
+            loadFromLocalStorage();
+            renderTable();
+            setupEventListeners();
+        }
+
+        // Load data from localStorage
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('groceryData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                groceryItems = data.items || [];
+                currentId = data.currentId || 1;
+            }
+        }
+
+        // Save data to localStorage
+        function saveToLocalStorage() {
+            const data = {
+                items: groceryItems,
+                currentId: currentId
+            };
+            localStorage.setItem('groceryData', JSON.stringify(data));
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Form submit handler
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const id = itemIdInput.value ? parseInt(itemIdInput.value) : 0;
+                const name = itemNameInput.value.trim();
+                const price = parseFloat(itemPriceInput.value);
+                const quantity = parseInt(itemQuantityInput.value);
+                
+                if (!name || isNaN(price) || isNaN(quantity)) {
+                    alert('Please fill all fields with valid values');
+                    return;
+                }
+                
+                if (price <= 0) {
+                    alert('Price must be greater than 0');
+                    return;
+                }
+                
+                if (quantity < 0) {
+                    alert('Quantity cannot be negative');
+                    return;
+                }
+                
+                if (id === 0) {
+                    // Add new item
+                    const newItem = {
+                        id: currentId++,
+                        name,
+                        price,
+                        quantity
+                    };
+                    groceryItems.push(newItem);
+                } else {
+                    // Update existing item
+                    const index = groceryItems.findIndex(item => item.id === id);
+                    if (index !== -1) {
+                        groceryItems[index] = { id, name, price, quantity };
+                    }
+                }
+                
+                saveToLocalStorage();
+                renderTable();
+                clearForm();
+            });
+
+            // Clear form handler
+            clearBtn.addEventListener('click', clearForm);
+
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                renderTable();
+            });
+
+            // Export data
+            exportBtn.addEventListener('click', exportData);
+
+            // Import data
+            importBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', importData);
+        }
+
+        // Function to render the table
+        function renderTable() {
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            // Filter items based on search term
+            const filteredItems = groceryItems.filter(item => 
+                item.name.toLowerCase().includes(searchTerm) ||
+                item.id.toString().includes(searchTerm)
+            );
+            
+            tableBody.innerHTML = '';
+            
+            if (filteredItems.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="5" style="text-align: center;">No items found</td>';
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            filteredItems.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.name}</td>
+                    <td>$${item.price.toFixed(2)}</td>
+                    <td>${item.quantity}</td>
+                    <td class="action-buttons">
+                        <button class="edit-btn" data-id="${item.id}">Edit</button>
+                        <button class="delete-btn" data-id="${item.id}">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to edit and delete buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    editItem(id);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    deleteItem(id);
+                });
+            });
+        }
+
+        // Function to edit an item
+        function editItem(id) {
+            const item = groceryItems.find(item => item.id === id);
+            if (item) {
+                itemIdInput.value = item.id;
+                itemNameInput.value = item.name;
+                itemPriceInput.value = item.price;
+                itemQuantityInput.value = item.quantity;
+                saveBtn.textContent = 'Update Item';
+                itemNameInput.focus();
+            }
+        }
+
+        // Function to delete an item
+        function deleteItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                groceryItems = groceryItems.filter(item => item.id !== id);
+                saveToLocalStorage();
+                renderTable();
+                if (parseInt(itemIdInput.value) === id) {
+                    clearForm();
+                }
+            }
+        }
+
+        // Function to clear the form
+        function clearForm() {
+            form.reset();
+            itemIdInput.value = '';
+            saveBtn.textContent = 'Save Item';
+        }
+
+        // Export data to JSON file
+        function exportData() {
+            const data = {
+                items: groceryItems,
+                currentId: currentId
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'grocery_data_backup.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Import data from JSON file
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.items && Array.isArray(data.items)) {
+                        if (confirm('This will replace your current data. Continue?')) {
+                            groceryItems = data.items;
+                            currentId = data.currentId || Math.max(...groceryItems.map(item => item.id)) + 1;
+                            saveToLocalStorage();
+                            renderTable();
+                            alert('Data imported successfully!');
+                        }
+                    } else {
+                        alert('Invalid data format');
+                    }
+                } catch (error) {
+                    alert('Error reading file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            fileInput.value = ''; // Reset file input
+        }
+
+        // Initialize the application when the page loads
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
