@@ -9,93 +9,249 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --gray-color: #95a5a6;
+            --text-color: #333;
+            --light-bg: #f5f7fa;
+            --white: #ffffff;
+            --border-color: #ddd;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            margin: 0;
-            padding: 20px;
-            color: #333;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 10px;
         }
+        
         .container {
-            max-width: 800px;
+            max-width: 100%;
+            width: 100%;
             margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background: var(--white);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
         }
-        h1 {
+        
+        @media (min-width: 768px) {
+            .container {
+                max-width: 800px;
+                padding: 30px;
+            }
+        }
+        
+        h1, h2 {
             text-align: center;
             color: #2c3e50;
-            margin-bottom: 30px;
         }
+        
+        h1 {
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        h2 {
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
         .hidden {
             display: none;
         }
-        input, button {
+        
+        input, select, button {
             width: 100%;
             padding: 12px;
             margin: 8px 0;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 5px;
-            box-sizing: border-box;
+            font-size: 1rem;
         }
+        
         button {
-            background-color: #3498db;
-            color: white;
+            background-color: var(--primary-color);
+            color: var(--white);
             border: none;
             cursor: pointer;
             font-weight: bold;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
         }
+        
         button:hover {
-            background-color: #2980b9;
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
         }
+        
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            font-size: 0.9rem;
         }
+        
+        @media (min-width: 768px) {
+            table {
+                font-size: 1rem;
+            }
+        }
+        
         th, td {
-            padding: 12px 15px;
+            padding: 10px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--border-color);
         }
+        
         th {
             background-color: #f2f2f2;
+            font-weight: bold;
         }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
         .action-buttons button {
             padding: 5px 10px;
-            font-size: 12px;
-            margin: 2px;
+            font-size: 0.8rem;
+            width: auto;
         }
-        .edit-btn { background-color: #f39c12; }
-        .edit-btn:hover { background-color: #e67e22; }
-        .delete-btn { background-color: #e74c3c; }
-        .delete-btn:hover { background-color: #c0392b; }
+        
+        @media (min-width: 768px) {
+            .action-buttons button {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+            }
+        }
+        
+        .edit-btn { 
+            background-color: var(--warning-color);
+        }
+        .edit-btn:hover {
+            background-color: #e67e22;
+        }
+        
+        .delete-btn { 
+            background-color: var(--danger-color);
+        }
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+        
         .logout-btn { 
-            background-color: #95a5a6;
+            background-color: var(--gray-color);
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             width: auto;
             padding: 8px 15px;
+            font-size: 0.9rem;
         }
+        
+        @media (min-width: 768px) {
+            .logout-btn {
+                top: 20px;
+                right: 20px;
+            }
+        }
+        
         .error-message {
-            color: #e74c3c;
+            color: var(--danger-color);
             margin: 10px 0;
+            font-size: 0.9rem;
         }
-        .login-section {
-            max-width: 400px;
+        
+        .login-section, .signup-section {
+            max-width: 100%;
             margin: 0 auto;
         }
+        
+        @media (min-width: 768px) {
+            .login-section, .signup-section {
+                max-width: 400px;
+            }
+        }
+        
         .app-header {
             margin-bottom: 20px;
+            text-align: center;
         }
+        
         .welcome-message {
-            font-size: 1.2em;
+            font-size: 1.2rem;
             color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .store-name {
+            font-size: 1rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        /* Password validation styles */
+        .password-strength {
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .password-valid {
+            color: var(--success-color);
+        }
+        
+        .password-invalid {
+            color: var(--danger-color);
+        }
+        
+        .password-hint {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            margin-top: 3px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .unit-selector {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .unit-selector label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .button-group button {
+            flex: 1;
+        }
+        
+        .search-container {
+            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -106,24 +262,38 @@
             <div class="login-section">
                 <h1>Grocery Manager</h1>
                 <h2>Login</h2>
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
+                <div class="form-group">
+                    <input type="email" id="loginEmail" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="Password" required>
+                    <div id="loginPasswordFeedback" class="password-strength hidden"></div>
+                </div>
                 <button id="loginBtn">Login</button>
                 <p id="loginError" class="error-message hidden"></p>
-                <p>Don't have an account? <a href="#" id="showSignup">Sign up</a></p>
+                <p style="text-align: center; margin-top: 15px;">Don't have an account? <a href="#" id="showSignup">Sign up</a></p>
             </div>
         </div>
 
         <!-- Signup Section -->
         <div id="signupSection" class="hidden">
-            <div class="login-section">
+            <div class="signup-section">
                 <h1>Grocery Manager</h1>
                 <h2>Create Account</h2>
-                <input type="email" id="signupEmail" placeholder="Email" required>
-                <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" required>
-                <button id="signupBtn">Create Account</button>
+                <div class="form-group">
+                    <input type="email" id="signupEmail" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" required>
+                    <div id="signupPasswordFeedback" class="password-strength hidden"></div>
+                    <p class="password-hint">Password must be at least 6 characters</p>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="storeName" placeholder="Your Store Name" required>
+                </div>
+                <button id="signupBtn" disabled>Create Account</button>
                 <p id="signupError" class="error-message hidden"></p>
-                <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+                <p style="text-align: center; margin-top: 15px;">Already have an account? <a href="#" id="showLogin">Login</a></p>
             </div>
         </div>
 
@@ -131,15 +301,29 @@
         <div id="appSection" class="hidden">
             <button id="logoutBtn" class="logout-btn">Logout</button>
             <div class="app-header">
-                <h1 class="welcome-message">Welcome, <span id="currentUser"></span></h1>
+                <h1 class="welcome-message">Welcome back!</h1>
+                <p class="store-name" id="storeNameDisplay"></p>
             </div>
             
             <div class="form-section">
                 <form id="groceryForm">
                     <input type="hidden" id="itemId">
-                    <input type="text" id="itemName" placeholder="Item Name" required>
-                    <input type="number" id="itemPrice" placeholder="Price" min="0.01" step="0.01" required>
-                    <input type="number" id="itemQuantity" placeholder="Quantity" min="0" required>
+                    <div class="form-group">
+                        <input type="text" id="itemName" placeholder="Item Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="itemPrice" placeholder="Price" min="0.01" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <div class="unit-selector">
+                            <label><input type="radio" name="unit" value="kg" checked> per kg</label>
+                            <label><input type="radio" name="unit" value="L"> per L</label>
+                            <label><input type="radio" name="unit" value="piece"> per piece</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="itemQuantity" placeholder="Quantity" min="0" required>
+                    </div>
                     <div class="button-group">
                         <button type="submit" id="saveBtn">Save Item</button>
                         <button type="button" id="clearBtn">Clear Form</button>
@@ -158,7 +342,8 @@
                             <th>ID</th>
                             <th>Name</th>
                             <th>Price</th>
-                            <th>Quantity</th>
+                            <th>Unit</th>
+                            <th>Qty</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -169,10 +354,11 @@
     </div>
 
     <script>
-        // Replace with your actual Firebase config
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAm5g2CzYefVc8BH3TXA_u9srIl8BNmyR0",
             authDomain: "rk-store-5bf7a.firebaseapp.com",
+            databaseURL: "https://rk-store-5bf7a-default-rtdb.firebaseio.com",
             projectId: "rk-store-5bf7a",
             storageBucket: "rk-store-5bf7a.firebasestorage.app",
             messagingSenderId: "927163081383",
@@ -188,6 +374,7 @@
         // App state
         let currentUser = null;
         let groceryItems = [];
+        let userStoreName = "";
 
         // DOM elements
         const loginSection = document.getElementById('loginSection');
@@ -198,7 +385,8 @@
         const loginBtn = document.getElementById('loginBtn');
         const signupBtn = document.getElementById('signupBtn');
         const logoutBtn = document.getElementById('logoutBtn');
-        const currentUserSpan = document.getElementById('currentUser');
+        const storeNameInput = document.getElementById('storeName');
+        const storeNameDisplay = document.getElementById('storeNameDisplay');
         const loginError = document.getElementById('loginError');
         const signupError = document.getElementById('signupError');
 
@@ -212,6 +400,12 @@
         const itemQuantityInput = document.getElementById('itemQuantity');
         const saveBtn = document.getElementById('saveBtn');
         const clearBtn = document.getElementById('clearBtn');
+
+        // Password validation elements
+        const loginPasswordInput = document.getElementById('loginPassword');
+        const loginPasswordFeedback = document.getElementById('loginPasswordFeedback');
+        const signupPasswordInput = document.getElementById('signupPassword');
+        const signupPasswordFeedback = document.getElementById('signupPasswordFeedback');
 
         // Event Listeners
         showSignup.addEventListener('click', (e) => {
@@ -230,6 +424,45 @@
         signupBtn.addEventListener('click', handleSignup);
         logoutBtn.addEventListener('click', handleLogout);
 
+        // Password validation during typing
+        signupPasswordInput.addEventListener('input', validateSignupPassword);
+        loginPasswordInput.addEventListener('input', validateLoginPassword);
+        storeNameInput.addEventListener('input', validateSignupForm);
+
+        function validateSignupPassword() {
+            const password = signupPasswordInput.value;
+            const isValid = password.length >= 6;
+            
+            if (password.length > 0) {
+                signupPasswordFeedback.classList.remove('hidden');
+                signupPasswordFeedback.textContent = isValid ? "✓ Password is valid" : "✗ Password too short";
+                signupPasswordFeedback.className = `password-strength ${isValid ? 'password-valid' : 'password-invalid'}`;
+            } else {
+                signupPasswordFeedback.classList.add('hidden');
+            }
+            validateSignupForm();
+        }
+
+        function validateLoginPassword() {
+            const password = loginPasswordInput.value;
+            
+            if (password.length > 0) {
+                loginPasswordFeedback.classList.remove('hidden');
+                loginPasswordFeedback.textContent = "✓ Password entered";
+                loginPasswordFeedback.className = "password-strength password-valid";
+            } else {
+                loginPasswordFeedback.classList.add('hidden');
+            }
+        }
+
+        function validateSignupForm() {
+            const passwordValid = signupPasswordInput.value.length >= 6;
+            const storeNameValid = storeNameInput.value.trim().length > 0;
+            const emailValid = signupEmail.value.includes('@');
+            
+            signupBtn.disabled = !(passwordValid && storeNameValid && emailValid);
+        }
+
         // Authentication Functions
         function handleLogin() {
             const email = document.getElementById('loginEmail').value;
@@ -239,9 +472,6 @@
                 .then((userCredential) => {
                     currentUser = userCredential.user;
                     loadUserData();
-                    loginSection.classList.add('hidden');
-                    appSection.classList.remove('hidden');
-                    currentUserSpan.textContent = currentUser.email;
                 })
                 .catch((error) => {
                     showError(loginError, error.message);
@@ -251,20 +481,20 @@
         function handleSignup() {
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
+            const storeName = document.getElementById('storeName').value.trim();
 
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     currentUser = userCredential.user;
                     // Initialize user's data structure
                     return database.ref('users/' + currentUser.uid).set({
+                        storeName: storeName,
                         groceries: {}
                     });
                 })
                 .then(() => {
+                    userStoreName = storeName;
                     loadUserData();
-                    signupSection.classList.add('hidden');
-                    appSection.classList.remove('hidden');
-                    currentUserSpan.textContent = currentUser.email;
                 })
                 .catch((error) => {
                     showError(signupError, error.message);
@@ -275,6 +505,7 @@
             auth.signOut().then(() => {
                 currentUser = null;
                 groceryItems = [];
+                userStoreName = "";
                 loginSection.classList.remove('hidden');
                 appSection.classList.add('hidden');
                 clearGroceryForm();
@@ -286,6 +517,14 @@
         function loadUserData() {
             if (!currentUser) return;
             
+            // Load store name
+            database.ref('users/' + currentUser.uid + '/storeName').once('value')
+                .then((snapshot) => {
+                    userStoreName = snapshot.val() || "My Store";
+                    storeNameDisplay.textContent = userStoreName;
+                });
+            
+            // Load groceries
             database.ref('users/' + currentUser.uid + '/groceries').on('value', (snapshot) => {
                 const data = snapshot.val();
                 
@@ -298,6 +537,9 @@
                 }
                 
                 renderTable();
+                loginSection.classList.add('hidden');
+                signupSection.classList.add('hidden');
+                appSection.classList.remove('hidden');
             }, (error) => {
                 console.error("Error loading data:", error);
                 showError(loginError, "Failed to load data");
@@ -332,7 +574,7 @@
             
             if (filteredItems.length === 0) {
                 const row = document.createElement('tr');
-                row.innerHTML = '<td colspan="5" style="text-align: center;">No items found</td>';
+                row.innerHTML = '<td colspan="6" style="text-align: center;">No items found</td>';
                 tableBody.appendChild(row);
                 return;
             }
@@ -342,7 +584,8 @@
                 row.innerHTML = `
                     <td>${item.id}</td>
                     <td>${item.name}</td>
-                    <td>$${item.price.toFixed(2)}</td>
+                    <td>$${item.price.toFixed(2)}/${item.unit}</td>
+                    <td>${item.unit}</td>
                     <td>${item.quantity}</td>
                     <td class="action-buttons">
                         <button class="edit-btn" data-id="${item.id}">Edit</button>
@@ -375,6 +618,8 @@
                 itemNameInput.value = item.name;
                 itemPriceInput.value = item.price;
                 itemQuantityInput.value = item.quantity;
+                // Set the unit radio button
+                document.querySelector(`input[name="unit"][value="${item.unit}"]`).checked = true;
                 saveBtn.textContent = 'Update Item';
                 itemNameInput.focus();
             }
@@ -395,6 +640,8 @@
             form.reset();
             itemIdInput.value = '';
             saveBtn.textContent = 'Save Item';
+            // Reset unit to default (kg)
+            document.querySelector('input[name="unit"][value="kg"]').checked = true;
         }
 
         // Form submission
@@ -405,6 +652,7 @@
             const name = itemNameInput.value.trim();
             const price = parseFloat(itemPriceInput.value);
             const quantity = parseInt(itemQuantityInput.value);
+            const unit = document.querySelector('input[name="unit"]:checked').value;
             
             if (!name || isNaN(price) || isNaN(quantity)) {
                 alert('Please fill all fields with valid values');
@@ -429,6 +677,7 @@
                     id: newId,
                     name,
                     price,
+                    unit,
                     quantity
                 };
                 groceryItems.push(newItem);
@@ -436,7 +685,7 @@
                 // Update existing item
                 const index = groceryItems.findIndex(item => item.id === id);
                 if (index !== -1) {
-                    groceryItems[index] = { id, name, price, quantity };
+                    groceryItems[index] = { id, name, price, unit, quantity };
                 }
             }
             
@@ -462,13 +711,10 @@
             if (user) {
                 currentUser = user;
                 loadUserData();
-                loginSection.classList.add('hidden');
-                signupSection.classList.add('hidden');
-                appSection.classList.remove('hidden');
-                currentUserSpan.textContent = user.email;
             } else {
                 currentUser = null;
                 groceryItems = [];
+                userStoreName = "";
                 loginSection.classList.remove('hidden');
                 appSection.classList.add('hidden');
             }
