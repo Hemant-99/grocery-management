@@ -169,8 +169,8 @@
     </div>
 
     <script>
-        // Replace with your Firebase config
-            const firebaseConfig = {
+        // Replace with your actual Firebase config
+        const firebaseConfig = {
             apiKey: "AIzaSyAm5g2CzYefVc8BH3TXA_u9srIl8BNmyR0",
             authDomain: "rk-store-5bf7a.firebaseapp.com",
             projectId: "rk-store-5bf7a",
@@ -255,14 +255,16 @@
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     currentUser = userCredential.user;
-                    // Initialize empty grocery list
-                    database.ref('users/' + currentUser.uid + '/groceries').set([])
-                        .then(() => {
-                            loadUserData();
-                            signupSection.classList.add('hidden');
-                            appSection.classList.remove('hidden');
-                            currentUserSpan.textContent = currentUser.email;
-                        });
+                    // Initialize user's data structure
+                    return database.ref('users/' + currentUser.uid).set({
+                        groceries: {}
+                    });
+                })
+                .then(() => {
+                    loadUserData();
+                    signupSection.classList.add('hidden');
+                    appSection.classList.remove('hidden');
+                    currentUserSpan.textContent = currentUser.email;
                 })
                 .catch((error) => {
                     showError(signupError, error.message);
@@ -285,14 +287,37 @@
             if (!currentUser) return;
             
             database.ref('users/' + currentUser.uid + '/groceries').on('value', (snapshot) => {
-                groceryItems = snapshot.val() || [];
+                const data = snapshot.val();
+                
+                if (data) {
+                    // Convert object to array
+                    groceryItems = Object.values(data);
+                } else {
+                    // Initialize empty array if no data exists
+                    groceryItems = [];
+                }
+                
                 renderTable();
+            }, (error) => {
+                console.error("Error loading data:", error);
+                showError(loginError, "Failed to load data");
             });
         }
 
         function saveUserData() {
             if (!currentUser) return;
-            database.ref('users/' + currentUser.uid + '/groceries').set(groceryItems);
+            
+            // Convert array to object with IDs as keys
+            const itemsObject = {};
+            groceryItems.forEach(item => {
+                itemsObject[item.id] = item;
+            });
+            
+            database.ref('users/' + currentUser.uid + '/groceries').set(itemsObject)
+                .catch(error => {
+                    console.error("Error saving data:", error);
+                    alert("Error saving data. Please try again.");
+                });
         }
 
         // UI Functions
