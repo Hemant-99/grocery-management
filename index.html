@@ -446,7 +446,107 @@
                 left: 0;
                 top: 0;
                 width: 100%;
+                padding: 20px;
+                font-family: Arial, sans-serif;
             }
+            
+            .print-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            
+            .print-store-name {
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+            
+            .print-store-info {
+                font-size: 14px;
+                margin-bottom: 10px;
+                color: #555;
+            }
+            
+            .print-bill-details {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 15px;
+                font-size: 14px;
+                border-bottom: 1px dashed #ccc;
+                padding-bottom: 10px;
+            }
+            
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 15px 0;
+                font-size: 14px;
+            }
+            
+            .print-table th {
+                border-bottom: 2px solid #000;
+                padding: 8px;
+                text-align: left;
+            }
+            
+            .print-table td {
+                padding: 8px;
+                border-bottom: 1px solid #ddd;
+            }
+            
+            .print-total {
+                text-align: right;
+                font-weight: bold;
+                margin-top: 15px;
+                font-size: 18px;
+                border-top: 2px solid #000;
+                padding-top: 10px;
+            }
+            
+            .print-footer {
+                margin-top: 30px;
+                text-align: center;
+                font-size: 12px;
+                color: #777;
+                border-top: 1px dashed #ccc;
+                padding-top: 10px;
+            }
+            
+            .print-thank-you {
+                margin-top: 20px;
+                text-align: center;
+                font-style: italic;
+                font-size: 16px;
+            }
+            
+            .print-customer {
+                margin-top: 10px;
+                font-size: 14px;
+            }
+        }
+
+        /* Quantity input styles */
+        .quantity-input {
+            width: 60px !important;
+            padding: 5px !important;
+            margin: 0 5px !important;
+            text-align: center;
+        }
+
+        .stock-info {
+            font-size: 0.8rem;
+            color: #666;
+            margin-left: 5px;
+        }
+
+        .out-of-stock {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        /* Print-specific styles */
+        #printSection {
+            display: none;
         }
     </style>
 </head>
@@ -486,6 +586,12 @@
                 </div>
                 <div class="form-group">
                     <input type="text" id="storeName" placeholder="Your Store Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="storeAddress" placeholder="Store Address">
+                </div>
+                <div class="form-group">
+                    <input type="tel" id="storePhone" placeholder="Store Phone Number">
                 </div>
                 <button id="signupBtn" disabled>Create Account</button>
                 <div id="signupSpinner" class="spinner hidden"></div>
@@ -646,6 +752,8 @@
         let currentUser = null;
         let groceryItems = [];
         let userStoreName = "";
+        let userStoreAddress = "";
+        let userStorePhone = "";
         let currentBill = [];
         let currentCustomer = null;
         let currentBillId = null;
@@ -660,6 +768,8 @@
         const signupBtn = document.getElementById('signupBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const storeNameInput = document.getElementById('storeName');
+        const storeAddressInput = document.getElementById('storeAddress');
+        const storePhoneInput = document.getElementById('storePhone');
         const storeNameDisplay = document.getElementById('storeNameDisplay');
         const loginError = document.getElementById('loginError');
         const signupError = document.getElementById('signupError');
@@ -846,9 +956,11 @@
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const storeName = document.getElementById('storeName').value.trim();
+            const storeAddress = document.getElementById('storeAddress').value.trim();
+            const storePhone = document.getElementById('storePhone').value.trim();
 
             if (!email || !password || !storeName) {
-                showError(signupError, "Please fill all fields");
+                showError(signupError, "Please fill all required fields");
                 return;
             }
 
@@ -861,6 +973,8 @@
                     // Initialize user's data structure
                     return database.ref('users/' + currentUser.uid).set({
                         storeName: storeName,
+                        storeAddress: storeAddress || "123 Grocery Street, Cityville",
+                        storePhone: storePhone || "(123) 456-7890",
                         groceries: {},
                         bills: {},
                         customers: {}
@@ -868,6 +982,8 @@
                 })
                 .then(() => {
                     userStoreName = storeName;
+                    userStoreAddress = storeAddress || "123 Grocery Street, Cityville";
+                    userStorePhone = storePhone || "(123) 456-7890";
                     loadUserData();
                 })
                 .catch((error) => {
@@ -896,6 +1012,8 @@
                 currentUser = null;
                 groceryItems = [];
                 userStoreName = "";
+                userStoreAddress = "";
+                userStorePhone = "";
                 currentBill = [];
                 currentCustomer = null;
                 loginSection.classList.remove('hidden');
@@ -908,10 +1026,13 @@
         function loadUserData() {
             if (!currentUser) return;
             
-            // Load store name
-            database.ref('users/' + currentUser.uid + '/storeName').once('value')
+            // Load store info
+            database.ref('users/' + currentUser.uid).once('value')
                 .then((snapshot) => {
-                    userStoreName = snapshot.val() || "My Store";
+                    const userData = snapshot.val();
+                    userStoreName = userData.storeName || "My Store";
+                    userStoreAddress = userData.storeAddress || "123 Grocery Street, Cityville";
+                    userStorePhone = userData.storePhone || "(123) 456-7890";
                     storeNameDisplay.textContent = userStoreName;
                 });
             
@@ -928,6 +1049,7 @@
                 }
                 
                 renderTable();
+                renderBillItemsList();
                 loginSection.classList.add('hidden');
                 signupSection.classList.add('hidden');
                 appSection.classList.remove('hidden');
@@ -1001,9 +1123,21 @@
             filteredItems.forEach(item => {
                 const itemElement = document.createElement('div');
                 itemElement.className = 'bill-item';
+                
+                const outOfStock = item.quantity <= 0;
+                const stockClass = outOfStock ? 'out-of-stock' : '';
+                
                 itemElement.innerHTML = `
-                    <span>${item.name} (₹${item.price}/${item.unit})</span>
-                    <button onclick="addToBill(${item.id})">Add</button>
+                    <div style="flex: 1;">
+                        <span>${item.name} (₹${item.price}/${item.unit})</span>
+                        <span class="stock-info ${stockClass}">${outOfStock ? 'Out of stock' : `Stock: ${item.quantity}`}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <input type="number" id="qty-${item.id}" 
+                               value="1" min="1" max="${item.quantity}" 
+                               class="quantity-input" ${outOfStock ? 'disabled' : ''}>
+                        <button onclick="addToBill(${item.id})" ${outOfStock ? 'disabled' : ''}>Add</button>
+                    </div>
                 `;
                 billItemsList.appendChild(itemElement);
             });
@@ -1013,17 +1147,37 @@
             const item = groceryItems.find(i => i.id === itemId);
             if (!item) return;
             
+            // Get the quantity from the input field
+            const qtyInput = document.getElementById(`qty-${itemId}`);
+            let quantity = parseInt(qtyInput.value) || 1;
+            
+            // Validate quantity
+            if (quantity <= 0) {
+                quantity = 1;
+                qtyInput.value = 1;
+            }
+            
+            if (quantity > item.quantity) {
+                alert(`Not enough stock! Only ${item.quantity} available.`);
+                qtyInput.value = item.quantity;
+                return;
+            }
+            
             const existingItem = currentBill.find(i => i.id === itemId);
             if (existingItem) {
-                existingItem.quantity += 1;
+                existingItem.quantity += quantity;
             } else {
                 currentBill.push({
                     ...item,
-                    quantity: 1
+                    quantity: quantity
                 });
             }
             
+            // Update inventory quantity locally
+            item.quantity -= quantity;
+            
             renderCurrentBill();
+            renderBillItemsList(); // Refresh the items list to show updated quantities
         }
         
         function renderCurrentBill() {
@@ -1047,7 +1201,8 @@
                 itemElement.className = 'bill-item';
                 itemElement.innerHTML = `
                     <span>${item.name} (${item.quantity} ${item.unit} × ₹${item.price})</span>
-                    <span>₹${itemTotal.toFixed(2)} 
+                    <span>
+                        ₹${itemTotal.toFixed(2)} 
                         <button onclick="removeFromBill(${index})">✕</button>
                     </span>
                 `;
@@ -1058,18 +1213,35 @@
         }
         
         function removeFromBill(index) {
+            const item = currentBill[index];
+            const inventoryItem = groceryItems.find(i => i.id === item.id);
+            
+            if (inventoryItem) {
+                inventoryItem.quantity += item.quantity;
+            }
+            
             currentBill.splice(index, 1);
             renderCurrentBill();
+            renderBillItemsList(); // Refresh the items list to show updated quantities
         }
         
         function clearCurrentBill() {
             if (currentBill.length === 0) return;
             
             if (confirm('Are you sure you want to clear the current bill?')) {
+                // Return all quantities to inventory
+                currentBill.forEach(billItem => {
+                    const inventoryItem = groceryItems.find(i => i.id === billItem.id);
+                    if (inventoryItem) {
+                        inventoryItem.quantity += billItem.quantity;
+                    }
+                });
+                
                 currentBill = [];
                 currentCustomer = null;
                 customerDetails.classList.add('hidden');
                 renderCurrentBill();
+                renderBillItemsList(); // Refresh the items list to show updated quantities
             }
         }
         
@@ -1121,16 +1293,35 @@
                 return;
             }
             
-            const billData = {
-                date: new Date().toISOString(),
-                items: currentBill,
-                total: parseFloat(billTotal.textContent),
-                storeName: userStoreName,
-                customer: currentCustomer || null
-            };
+            // First update all inventory items in Firebase
+            const updates = {};
+            currentBill.forEach(billItem => {
+                const inventoryItem = groceryItems.find(i => i.id === billItem.id);
+                if (inventoryItem) {
+                    updates[`/users/${currentUser.uid}/groceries/${billItem.id}/quantity`] = inventoryItem.quantity;
+                }
+            });
             
-            const newBillRef = database.ref('users/' + currentUser.uid + '/bills').push();
-            newBillRef.set(billData)
+            // Show loading state
+            saveBillBtn.disabled = true;
+            saveBillBtn.textContent = "Saving...";
+            
+            // Perform all inventory updates at once
+            database.ref().update(updates)
+                .then(() => {
+                    // After inventory is updated, save the bill
+                    const billData = {
+                        date: new Date().toISOString(),
+                        items: currentBill,
+                        total: parseFloat(billTotal.textContent),
+                        storeName: userStoreName,
+                        storeAddress: userStoreAddress,
+                        storePhone: userStorePhone,
+                        customer: currentCustomer || null
+                    };
+                    
+                    return database.ref('users/' + currentUser.uid + '/bills').push().set(billData);
+                })
                 .then(() => {
                     // If customer exists, save them separately
                     if (currentCustomer) {
@@ -1143,10 +1334,33 @@
                     showSuccess("Bill saved successfully!");
                     clearCurrentBill();
                     loadBillHistory();
+                    
+                    // Force refresh of inventory data
+                    return database.ref('users/' + currentUser.uid + '/groceries').once('value');
+                })
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    groceryItems = data ? Object.values(data) : [];
+                    renderTable();
+                    renderBillItemsList();
                 })
                 .catch(error => {
                     console.error("Error saving bill:", error);
                     showError(null, "Error saving bill. Please try again.");
+                    
+                    // Revert local changes if save failed
+                    currentBill.forEach(billItem => {
+                        const inventoryItem = groceryItems.find(i => i.id === billItem.id);
+                        if (inventoryItem) {
+                            inventoryItem.quantity += billItem.quantity;
+                        }
+                    });
+                    renderTable();
+                    renderBillItemsList();
+                })
+                .finally(() => {
+                    saveBillBtn.disabled = false;
+                    saveBillBtn.textContent = "Save Bill";
                 });
         }
         
@@ -1205,6 +1419,7 @@
                                 <tr>
                                     <th>Item</th>
                                     <th>Qty</th>
+                                    <th>Unit</th>
                                     <th>Price</th>
                                     <th>Total</th>
                                 </tr>
@@ -1216,8 +1431,9 @@
                         billDetails += `
                             <tr>
                                 <td>${item.name}</td>
-                                <td>${item.quantity} ${item.unit}</td>
-                                <td>₹${item.price}</td>
+                                <td>${item.quantity}</td>
+                                <td>${item.unit}</td>
+                                <td>₹${item.price.toFixed(2)}</td>
                                 <td>₹${(item.price * item.quantity).toFixed(2)}</td>
                             </tr>
                         `;
@@ -1264,6 +1480,8 @@
                 items: currentBill,
                 total: parseFloat(billTotal.textContent),
                 storeName: userStoreName,
+                storeAddress: userStoreAddress,
+                storePhone: userStorePhone,
                 customer: currentCustomer || null
             };
             
@@ -1274,40 +1492,77 @@
             const printSection = document.getElementById('printSection');
             printSection.innerHTML = '';
             
+            // Get current date and time
+            const now = new Date(billData.date);
+            const dateStr = now.toLocaleDateString();
+            const timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
             let printContent = `
-                <div style="max-width: 300px; margin: 0 auto; padding: 20px; font-family: Arial;">
-                    <h2 style="text-align: center; margin-bottom: 5px;">${billData.storeName}</h2>
-                    <p style="text-align: center; font-size: 0.9em; margin-bottom: 10px;">${new Date(billData.date).toLocaleString()}</p>
-                    ${billData.customer ? `<p style="margin-bottom: 5px;"><strong>Customer:</strong> ${billData.customer.name}</p>` : ''}
-                    <hr style="border-top: 1px dashed #000; margin: 10px 0;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                <div style="font-family: Arial, sans-serif; max-width: 80mm; margin: 0 auto;">
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <h2 style="margin: 5px 0; font-size: 18px;">${billData.storeName}</h2>
+                        <p style="margin: 3px 0; font-size: 12px;">${billData.storeAddress}</p>
+                        <p style="margin: 3px 0; font-size: 12px;">${billData.storePhone}</p>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #ccc; padding-bottom: 5px; margin-bottom: 10px; font-size: 12px;">
+                        <div>Date: ${dateStr}</div>
+                        <div>Time: ${timeStr}</div>
+                    </div>
+                    
+                    ${billData.customer ? `<div style="margin-bottom: 10px; font-size: 12px;"><strong>Customer:</strong> ${billData.customer.name}</div>` : ''}
+                    
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 10px;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #000;">
+                                <th style="text-align: left; padding: 3px 0;">Item</th>
+                                <th style="text-align: right; padding: 3px 0;">Qty</th>
+                                <th style="text-align: right; padding: 3px 0;">Price</th>
+                                <th style="text-align: right; padding: 3px 0;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
             
             billData.items.forEach(item => {
                 printContent += `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td style="text-align: right;">${item.quantity} ${item.unit}</td>
-                        <td style="text-align: right;">₹${item.price}</td>
-                        <td style="text-align: right;">₹${(item.price * item.quantity).toFixed(2)}</td>
+                    <tr style="border-bottom: 1px dashed #eee;">
+                        <td style="padding: 3px 0;">${item.name}</td>
+                        <td style="text-align: right; padding: 3px 0;">${item.quantity}${item.unit}</td>
+                        <td style="text-align: right; padding: 3px 0;">₹${item.price.toFixed(2)}</td>
+                        <td style="text-align: right; padding: 3px 0;">₹${(item.price * item.quantity).toFixed(2)}</td>
                     </tr>
                 `;
             });
             
             printContent += `
+                        </tbody>
                     </table>
-                    <hr style="border-top: 1px dashed #000; margin: 10px 0;">
-                    <div style="text-align: right; font-weight: bold;">
+                    
+                    <div style="text-align: right; border-top: 2px solid #000; padding-top: 5px; margin-top: 5px; font-weight: bold;">
                         Total: ₹${billData.total.toFixed(2)}
                     </div>
-                    <p style="text-align: center; margin-top: 20px; font-style: italic;">Thank you for shopping with us!</p>
+                    
+                    <div style="text-align: center; margin-top: 15px; font-style: italic;">
+                        Thank you for shopping with us!
+                    </div>
+                    
+                    <div style="text-align: center; font-size: 10px; margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 5px;">
+                        Please retain this receipt for returns/exchanges
+                    </div>
                 </div>
             `;
             
             printSection.innerHTML = printContent;
             
-            // Trigger print
-            window.print();
+            // Ensure print section is visible before printing
+            printSection.style.display = 'block';
+            
+            // Trigger print after a small delay to ensure content is rendered
+            setTimeout(() => {
+                window.print();
+                printSection.style.display = 'none';
+            }, 100);
         }
         
         // Inventory Management Functions
@@ -1492,6 +1747,8 @@
                 currentUser = null;
                 groceryItems = [];
                 userStoreName = "";
+                userStoreAddress = "";
+                userStorePhone = "";
                 currentBill = [];
                 currentCustomer = null;
                 loginSection.classList.remove('hidden');
