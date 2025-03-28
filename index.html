@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Grocery Store - Billing System</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -20,20 +20,23 @@
             --light-bg: #f5f7fa;
             --white: #ffffff;
             --border-color: #ddd;
+            --tap-highlight: rgba(0,0,0,0.1);
         }
         
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: var(--tap-highlight);
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background-color: var(--light-bg);
             color: var(--text-color);
             line-height: 1.6;
             padding: 10px;
+            touch-action: manipulation;
         }
         
         .container {
@@ -45,13 +48,7 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
-        }
-        
-        @media (min-width: 768px) {
-            .container {
-                max-width: 1200px;
-                padding: 30px;
-            }
+            min-height: calc(100vh - 20px);
         }
         
         h1, h2, h3 {
@@ -60,17 +57,22 @@
         }
         
         h1 {
-            margin-bottom: 20px;
-            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
         }
         
         h2 {
-            margin-bottom: 15px;
-            font-size: 1.4rem;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+        
+        h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
         }
         
         .hidden {
-            display: none;
+            display: none !important;
         }
         
         input, select, button {
@@ -78,8 +80,9 @@
             padding: 12px;
             margin: 8px 0;
             border: 1px solid var(--border-color);
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 1rem;
+            -webkit-appearance: none;
         }
         
         button {
@@ -88,36 +91,41 @@
             border: none;
             cursor: pointer;
             font-weight: bold;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+            min-height: 48px;
         }
         
-        button:hover {
+        button:active {
+            transform: scale(0.98);
             background-color: var(--primary-hover);
-            transform: translateY(-1px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            transform: none !important;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
             font-size: 0.9rem;
-        }
-        
-        @media (min-width: 768px) {
-            table {
-                font-size: 1rem;
-            }
+            table-layout: fixed;
         }
         
         th, td {
-            padding: 10px;
+            padding: 10px 5px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
+            word-break: break-word;
         }
         
         th {
             background-color: #f2f2f2;
             font-weight: bold;
+            position: sticky;
+            top: 0;
         }
         
         .action-buttons {
@@ -126,29 +134,23 @@
         }
         
         .action-buttons button {
-            padding: 5px 10px;
+            padding: 8px 10px;
             font-size: 0.8rem;
             width: auto;
-        }
-        
-        @media (min-width: 768px) {
-            .action-buttons button {
-                font-size: 0.9rem;
-                padding: 8px 12px;
-            }
+            min-height: auto;
         }
         
         .edit-btn { 
             background-color: var(--warning-color);
         }
-        .edit-btn:hover {
+        .edit-btn:active {
             background-color: #e67e22;
         }
         
         .delete-btn { 
             background-color: var(--danger-color);
         }
-        .delete-btn:hover {
+        .delete-btn:active {
             background-color: #c0392b;
         }
         
@@ -160,35 +162,26 @@
             width: auto;
             padding: 8px 15px;
             font-size: 0.9rem;
-        }
-        
-        @media (min-width: 768px) {
-            .logout-btn {
-                top: 20px;
-                right: 20px;
-            }
+            min-height: auto;
         }
         
         .error-message {
             color: var(--danger-color);
             margin: 10px 0;
             font-size: 0.9rem;
+            text-align: center;
         }
         
         .login-section, .signup-section {
             max-width: 100%;
             margin: 0 auto;
-        }
-        
-        @media (min-width: 768px) {
-            .login-section, .signup-section {
-                max-width: 400px;
-            }
+            padding: 10px;
         }
         
         .app-header {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
+            padding-top: 10px;
         }
         
         .welcome-message {
@@ -232,6 +225,7 @@
             display: flex;
             gap: 10px;
             margin-top: 5px;
+            flex-wrap: wrap;
         }
         
         .unit-selector label {
@@ -239,6 +233,7 @@
             align-items: center;
             gap: 5px;
             font-size: 0.9rem;
+            white-space: nowrap;
         }
         
         .button-group {
@@ -248,68 +243,58 @@
         
         .button-group button {
             flex: 1;
+            min-height: 48px;
         }
         
         .search-container {
             margin-bottom: 15px;
+            position: sticky;
+            top: 0;
+            background: var(--white);
+            padding: 10px 0;
+            z-index: 10;
         }
         
         /* Billing System Styles */
         .billing-container {
             display: flex;
             flex-direction: column;
-            min-height: 80vh;
-        }
-        
-        @media (min-width: 768px) {
-            .billing-container {
-                flex-direction: row;
-            }
+            min-height: calc(100vh - 150px);
         }
         
         .billing-sidebar {
             width: 100%;
             background: #f8f9fa;
-            padding: 15px;
+            padding: 10px;
             border-bottom: 1px solid #ddd;
             display: flex;
             gap: 10px;
             overflow-x: auto;
-        }
-        
-        @media (min-width: 768px) {
-            .billing-sidebar {
-                width: 200px;
-                flex-direction: column;
-                border-right: 1px solid #ddd;
-                border-bottom: none;
-                overflow-x: visible;
-            }
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
         
         .billing-main {
             flex: 1;
-            padding: 20px;
+            padding: 15px;
+            overflow-y: auto;
         }
         
         .billing-btn {
             display: block;
             width: auto;
-            padding: 12px;
-            margin-bottom: 10px;
+            padding: 12px 15px;
+            margin-bottom: 0;
             background: #3498db;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             text-align: center;
             white-space: nowrap;
-        }
-        
-        @media (min-width: 768px) {
-            .billing-btn {
-                width: 100%;
-            }
+            min-height: auto;
+            flex-shrink: 0;
         }
         
         .billing-btn.active {
@@ -320,35 +305,36 @@
         .bill-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px;
+            padding: 12px 10px;
             border-bottom: 1px solid #eee;
+            align-items: center;
         }
         
         .bill-total {
             font-size: 1.2em;
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 15px;
             padding-top: 10px;
             border-top: 2px solid #333;
         }
         
         .bill-actions {
-            margin-top: 20px;
+            margin-top: 15px;
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
         
         .bill-actions button {
-            flex: 1;
-            min-width: 120px;
+            flex: 1 1 120px;
+            min-height: 48px;
         }
         
         .bill-history-item {
-            padding: 15px;
+            padding: 12px;
             margin-bottom: 10px;
             background: #f8f9fa;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
         }
         
@@ -359,10 +345,12 @@
         
         .bill-history-item p {
             margin-bottom: 5px;
+            font-size: 0.9rem;
         }
         
         .bill-history-item button {
-            margin-top: 10px;
+            margin-top: 8px;
+            min-height: 40px;
         }
         
         /* Loading spinner */
@@ -387,29 +375,35 @@
             margin: 10px 0;
             font-size: 0.9rem;
             text-align: center;
+            padding: 10px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 8px;
         }
         
         /* Modal styles */
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
+            z-index: 100;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
             overflow: auto;
             background-color: rgba(0,0,0,0.4);
+            touch-action: manipulation;
         }
         
         .modal-content {
             background-color: #fefefe;
-            margin: 15% auto;
+            margin: 10% auto;
             padding: 20px;
             border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
+            width: 90%;
+            max-width: 500px;
             border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
         
         .close {
@@ -426,11 +420,63 @@
         
         /* Customer details form */
         .customer-form {
-            margin-top: 20px;
+            margin-top: 15px;
         }
         
         .customer-form input {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+        }
+        
+        /* Quantity input styles */
+        .quantity-input {
+            width: 60px !important;
+            padding: 8px !important;
+            margin: 0 5px !important;
+            text-align: center;
+            min-height: auto;
+        }
+
+        .stock-info {
+            font-size: 0.8rem;
+            color: #666;
+            margin-left: 5px;
+        }
+
+        .out-of-stock {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        /* Scrollable containers */
+        .scrollable {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Bill items list */
+        #billItemsList {
+            max-height: 40vh;
+            overflow-y: auto;
+            margin: 15px 0;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Current bill items */
+        #billItemsContainer {
+            max-height: 30vh;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Bill history container */
+        #billHistoryContainer {
+            max-height: 60vh;
+            overflow-y: auto;
+            margin-top: 10px;
+            -webkit-overflow-scrolling: touch;
         }
         
         /* Print styles */
@@ -446,107 +492,129 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                padding: 20px;
+                padding: 10px;
                 font-family: Arial, sans-serif;
+                font-size: 12px;
             }
             
             .print-header {
                 text-align: center;
-                margin-bottom: 20px;
+                margin-bottom: 10px;
             }
             
             .print-store-name {
-                font-size: 24px;
+                font-size: 18px;
                 font-weight: bold;
-                margin-bottom: 5px;
+                margin-bottom: 3px;
             }
             
             .print-store-info {
-                font-size: 14px;
-                margin-bottom: 10px;
+                font-size: 12px;
+                margin-bottom: 5px;
                 color: #555;
             }
             
             .print-bill-details {
                 display: flex;
                 justify-content: space-between;
-                margin-bottom: 15px;
-                font-size: 14px;
+                margin-bottom: 10px;
+                font-size: 12px;
                 border-bottom: 1px dashed #ccc;
-                padding-bottom: 10px;
+                padding-bottom: 5px;
             }
             
             .print-table {
                 width: 100%;
                 border-collapse: collapse;
-                margin: 15px 0;
-                font-size: 14px;
+                margin: 10px 0;
+                font-size: 12px;
             }
             
             .print-table th {
                 border-bottom: 2px solid #000;
-                padding: 8px;
+                padding: 5px;
                 text-align: left;
             }
             
             .print-table td {
-                padding: 8px;
+                padding: 5px;
                 border-bottom: 1px solid #ddd;
             }
             
             .print-total {
                 text-align: right;
                 font-weight: bold;
-                margin-top: 15px;
-                font-size: 18px;
+                margin-top: 10px;
+                font-size: 14px;
                 border-top: 2px solid #000;
-                padding-top: 10px;
+                padding-top: 5px;
             }
             
             .print-footer {
-                margin-top: 30px;
+                margin-top: 15px;
                 text-align: center;
-                font-size: 12px;
+                font-size: 10px;
                 color: #777;
                 border-top: 1px dashed #ccc;
-                padding-top: 10px;
+                padding-top: 5px;
             }
             
             .print-thank-you {
-                margin-top: 20px;
+                margin-top: 10px;
                 text-align: center;
                 font-style: italic;
-                font-size: 16px;
+                font-size: 14px;
             }
             
             .print-customer {
-                margin-top: 10px;
-                font-size: 14px;
+                margin-top: 5px;
+                font-size: 12px;
             }
         }
 
-        /* Quantity input styles */
-        .quantity-input {
-            width: 60px !important;
-            padding: 5px !important;
-            margin: 0 5px !important;
-            text-align: center;
-        }
-
-        .stock-info {
-            font-size: 0.8rem;
-            color: #666;
-            margin-left: 5px;
-        }
-
-        .out-of-stock {
-            color: var(--danger-color);
-            font-weight: bold;
-        }
-
-        /* Print-specific styles */
+        /* Print Section (hidden) */
         #printSection {
             display: none;
+        }
+        
+        /* Mobile-specific adjustments */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.3rem;
+            }
+            
+            h2 {
+                font-size: 1.1rem;
+            }
+            
+            input, select, button {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            
+            .billing-btn {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .bill-item {
+                padding: 10px 8px;
+                font-size: 0.9rem;
+            }
+            
+            .action-buttons button {
+                padding: 6px 8px;
+                font-size: 0.7rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 15px;
+            }
         }
     </style>
 </head>
@@ -624,12 +692,12 @@
                         <div class="search-container">
                             <input type="text" id="billSearchInput" placeholder="Search items..." autocomplete="off">
                         </div>
-                        <div id="billItemsList" style="max-height: 300px; overflow-y: auto; margin: 20px 0; border: 1px solid #eee; border-radius: 5px;">
+                        <div id="billItemsList" class="scrollable">
                             <!-- Items will be listed here -->
                         </div>
                         <div id="currentBillItems">
                             <h3>Current Bill</h3>
-                            <div id="billItemsContainer">
+                            <div id="billItemsContainer" class="scrollable">
                                 <!-- Bill items will appear here -->
                             </div>
                             <div class="bill-total">
@@ -654,7 +722,7 @@
                         <div class="search-container">
                             <input type="text" id="historySearchInput" placeholder="Search bills..." autocomplete="off">
                         </div>
-                        <div id="billHistoryContainer">
+                        <div id="billHistoryContainer" class="scrollable">
                             <!-- Bill history will appear here -->
                         </div>
                     </div>
@@ -696,12 +764,12 @@
                             <table id="groceryTable">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Price</th>
-                                        <th>Unit</th>
-                                        <th>Qty</th>
-                                        <th>Actions</th>
+                                        <th style="width: 15%;">ID</th>
+                                        <th style="width: 25%;">Name</th>
+                                        <th style="width: 20%;">Price</th>
+                                        <th style="width: 15%;">Unit</th>
+                                        <th style="width: 10%;">Qty</th>
+                                        <th style="width: 15%;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tableBody"></tbody>
@@ -1444,7 +1512,7 @@
                         </table>
                         <hr>
                         <h3>Total: ₹${bill.total.toFixed(2)}</h3>
-                        <button onclick="reprintBill('${billId}')">Reprint Bill</button>
+                        <button onclick="reprintBill('${billId}')">Reprint</button>
                     `;
                     
                     // Create a modal to show details
@@ -1710,7 +1778,7 @@
                 tempError.style.padding = '10px 20px';
                 tempError.style.backgroundColor = '#f8d7da';
                 tempError.style.border = '1px solid #f5c6cb';
-                tempError.style.borderRadius = '5px';
+                tempError.style.borderRadius = '8px';
                 document.body.appendChild(tempError);
                 
                 setTimeout(() => {
