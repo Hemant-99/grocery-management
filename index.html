@@ -733,6 +733,45 @@
             font-size: 13px;
         }
         
+        /* Admin Section Styles */
+        .admin-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .admin-section h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .revenue-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .revenue-table th, .revenue-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        
+        .revenue-table th {
+            background-color: #f2f2f2;
+        }
+        
+        .admin-btn {
+            background-color: #9b59b6;
+            margin-top: 10px;
+        }
+        
+        .admin-btn:active {
+            background-color: #8e44ad;
+        }
+        
         @media (max-width: 480px) {
             .mobile-bill-content {
                 font-size: 12px;
@@ -750,10 +789,7 @@
             .mobile-bill-total {
                 font-size: 14px;
             }
-        }
-        
-        /* Mobile-specific adjustments */
-        @media (max-width: 480px) {
+            
             .container {
                 padding: 10px;
             }
@@ -790,6 +826,51 @@
                 width: 95%;
                 padding: 15px;
             }
+        }
+        .revenue-container {
+            margin-top: 20px;
+        }
+        
+        .revenue-day {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .revenue-day h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .revenue-stats {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .revenue-stat {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .revenue-stat span {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .month-selector {
+            margin-bottom: 15px;
+        }
+        
+        .month-report {
+            margin-top: 20px;
+        }
+        
+        .report-error {
+            color: #e74c3c;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -857,6 +938,7 @@
                     <button id="newBillBtn" class="billing-btn active">New Bill</button>
                     <button id="billHistoryBtn" class="billing-btn">Bill History</button>
                     <button id="inventoryBtn" class="billing-btn">Inventory</button>
+                    <button id="adminBtn" class="billing-btn admin-btn">Admin</button>
                 </div>
                 
                 <!-- Billing Main Content -->
@@ -951,6 +1033,47 @@
                             </table>
                         </div>
                     </div>
+                    
+                    <!-- Admin Section -->
+                    <div id="adminSection" class="hidden">
+                        <h2>Admin Dashboard</h2>
+                        
+                        <div class="admin-section">
+                            <h3>Store Information</h3>
+                            <div class="form-group">
+                                <input type="text" id="updateStoreName" placeholder="Store Name">
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="updateStoreAddress" placeholder="Store Address">
+                            </div>
+                            <div class="form-group">
+                                <input type="tel" id="updateStorePhone" placeholder="Store Phone">
+                            </div>
+                            <button id="updateStoreInfoBtn">Update Store Information</button>
+                        </div>
+                        
+                        <div class="admin-section">
+                            <h3>Daily Revenue</h3>
+                            <div id="dailyRevenueContainer" class="revenue-container">
+                                <!-- Daily revenue will be displayed here -->
+                            </div>
+                        </div>
+                        
+                        <div class="admin-section">
+                            <h3>Monthly Report</h3>
+                            <div class="month-selector">
+                                <label for="reportMonth">Select Month:</label>
+                                <input type="month" id="reportMonth">
+                            </div>
+                            <button id="generateReportBtn">Generate Report</button>
+                            
+                            <div id="monthReport" class="month-report hidden">
+                                <h4>Monthly Revenue for <span id="reportMonthDisplay"></span></h4>
+                                <div id="monthReportContent"></div>
+                                <p id="reportError" class="report-error hidden"></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -994,7 +1117,6 @@
                         </tr>
                     </thead>
                     <tbody id="mobileBillItems">
-                        <!-- Bill items will be inserted here -->
                     </tbody>
                 </table>
             </div>
@@ -1066,9 +1188,11 @@
         const newBillBtn = document.getElementById('newBillBtn');
         const billHistoryBtn = document.getElementById('billHistoryBtn');
         const inventoryBtn = document.getElementById('inventoryBtn');
+        const adminBtn = document.getElementById('adminBtn');
         const newBillSection = document.getElementById('newBillSection');
         const billHistorySection = document.getElementById('billHistorySection');
         const inventorySection = document.getElementById('inventorySection');
+        const adminSection = document.getElementById('adminSection');
         const billSearchInput = document.getElementById('billSearchInput');
         const billItemsList = document.getElementById('billItemsList');
         const billItemsContainer = document.getElementById('billItemsContainer');
@@ -1096,14 +1220,27 @@
         const saveBtn = document.getElementById('saveBtn');
         const clearBtn = document.getElementById('clearBtn');
 
+        // Admin elements
+        const updateStoreName = document.getElementById('updateStoreName');
+        const updateStoreAddress = document.getElementById('updateStoreAddress');
+        const updateStorePhone = document.getElementById('updateStorePhone');
+        const updateStoreInfoBtn = document.getElementById('updateStoreInfoBtn');
+        const reportMonth = document.getElementById('reportMonth');
+        const generateReportBtn = document.getElementById('generateReportBtn');
+        const revenueReport = document.getElementById('revenueReport');
+        const reportMonthDisplay = document.getElementById('reportMonthDisplay');
+        const revenueData = document.getElementById('revenueData');
+        const totalBills = document.getElementById('totalBills');
+        const totalRevenue = document.getElementById('totalRevenue');
+
+        // Mobile bill popup elements
+        const mobileBillPopup = document.getElementById('mobileBillPopup');
+
         // Password validation elements
         const loginPasswordInput = document.getElementById('loginPassword');
         const loginPasswordFeedback = document.getElementById('loginPasswordFeedback');
         const signupPasswordInput = document.getElementById('signupPassword');
         const signupPasswordFeedback = document.getElementById('signupPasswordFeedback');
-
-        // Mobile bill popup elements
-        const mobileBillPopup = document.getElementById('mobileBillPopup');
 
         // Event Listeners
         showSignup.addEventListener('click', (e) => {
@@ -1131,6 +1268,7 @@
         newBillBtn.addEventListener('click', () => showSection('newBill'));
         billHistoryBtn.addEventListener('click', () => showSection('billHistory'));
         inventoryBtn.addEventListener('click', () => showSection('inventory'));
+        adminBtn.addEventListener('click', () => showSection('admin'));
         billSearchInput.addEventListener('input', renderBillItemsList);
         printBillBtn.addEventListener('click', printBill);
         saveBillBtn.addEventListener('click', saveBill);
@@ -1144,6 +1282,10 @@
         form.addEventListener('submit', handleFormSubmit);
         clearBtn.addEventListener('click', clearGroceryForm);
         searchInput.addEventListener('input', renderTable);
+
+        // Admin Event Listeners
+        updateStoreInfoBtn.addEventListener('click', updateStoreInfo);
+        generateReportBtn.addEventListener('click', generateRevenueReport);
 
         // Close modal when clicking outside
         window.addEventListener('click', (event) => {
@@ -1326,6 +1468,13 @@
                     userStoreAddress = userData.storeAddress || "123 Grocery Street, Cityville";
                     userStorePhone = userData.storePhone || "(123) 456-7890";
                     storeNameDisplay.textContent = userStoreName;
+                    
+                    // Set current month in report selector
+                    const today = new Date();
+                    const month = today.getMonth() + 1;
+                    const year = today.getFullYear();
+                    document.getElementById('reportMonth').value = 
+                        `${year}-${month.toString().padStart(2, '0')}`;
                 });
             
             // Load groceries
@@ -1372,10 +1521,12 @@
             newBillSection.classList.add('hidden');
             billHistorySection.classList.add('hidden');
             inventorySection.classList.add('hidden');
+            adminSection.classList.add('hidden');
             
             newBillBtn.classList.remove('active');
             billHistoryBtn.classList.remove('active');
             inventoryBtn.classList.remove('active');
+            adminBtn.classList.remove('active');
             
             switch(section) {
                 case 'newBill':
@@ -1392,6 +1543,11 @@
                 case 'inventory':
                     inventorySection.classList.remove('hidden');
                     inventoryBtn.classList.add('active');
+                    break;
+                case 'admin':
+                    adminSection.classList.remove('hidden');
+                    adminBtn.classList.add('active');
+                    loadStoreInfo();
                     break;
             }
         }
@@ -1754,8 +1910,9 @@
             // Set customer info if available
             if (billData.customer) {
                 customerInfo.innerHTML = `
-                    <p><strong>Customer:</strong> ${billData.customer.name}</p>
+                    <p><strong>Name:</strong> ${billData.customer.name}</p>
                     ${billData.customer.phone ? `<p><strong>Phone:</strong> ${billData.customer.phone}</p>` : ''}
+                    ${billData.customer.email ? `<p><strong>Email:</strong> ${billData.customer.email}</p>` : ''}
                 `;
                 customerInfo.classList.remove('hidden');
             } else {
@@ -1875,6 +2032,318 @@
                 printSection.style.display = 'none';
                 mobileBillPopup.classList.add('hidden');
             }, 100);
+        }
+        
+        // Admin Functions
+        function loadStoreInfo() {
+            if (!currentUser) return;
+            
+            database.ref('users/' + currentUser.uid).once('value')
+                .then((snapshot) => {
+                    const userData = snapshot.val();
+                    updateStoreName.value = userData.storeName || "";
+                    updateStoreAddress.value = userData.storeAddress || "";
+                    updateStorePhone.value = userData.storePhone || "";
+                    
+                    // Load daily revenue
+                    loadDailyRevenue();
+                });
+        }
+
+        function loadDailyRevenue() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            
+            database.ref('users/' + currentUser.uid + '/dailyRevenue/' + todayStr).once('value')
+                .then((snapshot) => {
+                    const dailyData = snapshot.val();
+                    displayDailyRevenue(today, dailyData);
+                });
+        }
+
+        function displayDailyRevenue(date, dailyData) {
+            const dailyRevenueContainer = document.getElementById('dailyRevenueContainer');
+            dailyRevenueContainer.innerHTML = '';
+            
+            const dateStr = date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            const revenueDay = document.createElement('div');
+            revenueDay.className = 'revenue-day';
+            
+            if (dailyData) {
+                revenueDay.innerHTML = `
+                    <h4>${dateStr}</h4>
+                    <div class="revenue-stats">
+                        <div class="revenue-stat">
+                            <div>Total Bills</div>
+                            <span>${dailyData.totalBills || 0}</span>
+                        </div>
+                        <div class="revenue-stat">
+                            <div>Total Revenue</div>
+                            <span>₹${(dailyData.totalRevenue || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="revenue-stat">
+                            <div>Average Bill</div>
+                            <span>₹${(dailyData.totalRevenue / dailyData.totalBills || 0).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                revenueDay.innerHTML = `
+                    <h4>${dateStr}</h4>
+                    <p>No revenue data for today yet</p>
+                `;
+            }
+            
+            dailyRevenueContainer.appendChild(revenueDay);
+        }
+
+        function generateRevenueReport() {
+            const monthInput = document.getElementById('reportMonth').value;
+            if (!monthInput) {
+                showReportError("Please select a month");
+                return;
+            }
+            
+            const [year, month] = monthInput.split('-');
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0);
+            
+            document.getElementById('reportMonthDisplay').textContent = 
+                startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            // Clear previous error
+            document.getElementById('reportError').classList.add('hidden');
+            
+            database.ref('users/' + currentUser.uid + '/bills').once('value')
+                .then(snapshot => {
+                    const bills = snapshot.val();
+                    const monthReportContent = document.getElementById('monthReportContent');
+                    monthReportContent.innerHTML = '';
+                    
+                    if (!bills) {
+                        monthReportContent.innerHTML = '<p>No bills found for this month</p>';
+                        document.getElementById('monthReport').classList.remove('hidden');
+                        return;
+                    }
+                    
+                    // Initialize daily totals
+                    const dailyTotals = {};
+                    let monthTotalBills = 0;
+                    let monthTotalRevenue = 0;
+                    
+                    // Process each bill
+                    Object.values(bills).forEach(bill => {
+                        const billDate = new Date(bill.date);
+                        if (billDate >= startDate && billDate <= endDate) {
+                            const dateStr = billDate.toISOString().split('T')[0];
+                            
+                            if (!dailyTotals[dateStr]) {
+                                dailyTotals[dateStr] = {
+                                    bills: 0,
+                                    revenue: 0
+                                };
+                            }
+                            
+                            dailyTotals[dateStr].bills++;
+                            dailyTotals[dateStr].revenue += bill.total;
+                            monthTotalBills++;
+                            monthTotalRevenue += bill.total;
+                        }
+                    });
+                    
+                    // Sort dates chronologically
+                    const sortedDates = Object.keys(dailyTotals).sort();
+                    
+                    // Display the report
+                    if (sortedDates.length === 0) {
+                        monthReportContent.innerHTML = '<p>No bills found for this month</p>';
+                    } else {
+                        // Create table for report
+                        const table = document.createElement('table');
+                        table.className = 'revenue-table';
+                        table.innerHTML = `
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Bills</th>
+                                    <th>Revenue</th>
+                                    <th>Average</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                        `;
+                        
+                        // Add rows for each day
+                        sortedDates.forEach(dateStr => {
+                            const date = new Date(dateStr);
+                            const dayData = dailyTotals[dateStr];
+                            const avg = dayData.revenue / dayData.bills;
+                            
+                            table.innerHTML += `
+                                <tr>
+                                    <td>${date.toLocaleDateString()}</td>
+                                    <td>${dayData.bills}</td>
+                                    <td>₹${dayData.revenue.toFixed(2)}</td>
+                                    <td>₹${avg.toFixed(2)}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        // Add monthly totals
+                        table.innerHTML += `
+                            <tfoot>
+                                <tr>
+                                    <th>Monthly Total</th>
+                                    <th>${monthTotalBills}</th>
+                                    <th>₹${monthTotalRevenue.toFixed(2)}</th>
+                                    <th>₹${(monthTotalRevenue / monthTotalBills || 0).toFixed(2)}</th>
+                                </tr>
+                            </tfoot>
+                        `;
+                        
+                        table.innerHTML += `</tbody>`;
+                        monthReportContent.appendChild(table);
+                    }
+                    
+                    document.getElementById('monthReport').classList.remove('hidden');
+                    
+                    // Update daily revenue in database
+                    updateDailyRevenue(startDate, monthTotalBills, monthTotalRevenue);
+                })
+                .catch(error => {
+                    console.error("Error generating report:", error);
+                    showReportError("Failed to generate report. Please try again.");
+                });
+        }
+
+        function updateDailyRevenue(date, totalBills, totalRevenue) {
+            const dateStr = date.toISOString().split('T')[0];
+            const updates = {
+                totalBills: totalBills,
+                totalRevenue: totalRevenue,
+                lastUpdated: new Date().toISOString()
+            };
+            
+            database.ref('users/' + currentUser.uid + '/dailyRevenue/' + dateStr).update(updates)
+                .then(() => {
+                    console.log("Daily revenue updated successfully");
+                })
+                .catch(error => {
+                    console.error("Error updating daily revenue:", error);
+                });
+        }
+
+        function showReportError(message) {
+            const errorElement = document.getElementById('reportError');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        // Modify saveBill function to update daily revenue
+        function saveBill() {
+            if (currentBill.length === 0) {
+                alert("Cannot save an empty bill!");
+                return;
+            }
+            
+            // First update all inventory items in Firebase
+            const updates = {};
+            currentBill.forEach(billItem => {
+                const inventoryItem = groceryItems.find(i => i.id === billItem.id);
+                if (inventoryItem) {
+                    updates[`/users/${currentUser.uid}/groceries/${billItem.id}/quantity`] = inventoryItem.quantity;
+                }
+            });
+            
+            // Show loading state
+            saveBillBtn.disabled = true;
+            saveBillBtn.textContent = "Saving...";
+            
+            // Get current date for daily revenue tracking
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const billTotalAmount = parseFloat(billTotal.textContent);
+            
+            // Perform all inventory updates at once
+            database.ref().update(updates)
+                .then(() => {
+                    // After inventory is updated, save the bill
+                    const billData = {
+                        date: now.toISOString(),
+                        items: currentBill,
+                        total: billTotalAmount,
+                        storeName: userStoreName,
+                        storeAddress: userStoreAddress,
+                        storePhone: userStorePhone,
+                        customer: currentCustomer || null
+                    };
+                    
+                    return database.ref('users/' + currentUser.uid + '/bills').push().set(billData);
+                })
+                .then(() => {
+                    // If customer exists, save them separately
+                    if (currentCustomer) {
+                        database.ref('users/' + currentUser.uid + '/customers').push({
+                            ...currentCustomer,
+                            lastPurchase: new Date().toISOString()
+                        });
+                    }
+                    
+                    // Update daily revenue
+                    return database.ref('users/' + currentUser.uid + '/dailyRevenue/' + todayStr).transaction((dailyData) => {
+                        if (dailyData === null) {
+                            return {
+                                totalBills: 1,
+                                totalRevenue: billTotalAmount,
+                                lastUpdated: new Date().toISOString()
+                            };
+                        } else {
+                            dailyData.totalBills = (dailyData.totalBills || 0) + 1;
+                            dailyData.totalRevenue = (dailyData.totalRevenue || 0) + billTotalAmount;
+                            dailyData.lastUpdated = new Date().toISOString();
+                            return dailyData;
+                        }
+                    });
+                })
+                .then(() => {
+                    showSuccess("Bill saved successfully!");
+                    clearCurrentBill();
+                    loadBillHistory();
+                    loadDailyRevenue();
+                    
+                    // Force refresh of inventory data
+                    return database.ref('users/' + currentUser.uid + '/groceries').once('value');
+                })
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    groceryItems = data ? Object.values(data) : [];
+                    renderTable();
+                    renderBillItemsList();
+                })
+                .catch(error => {
+                    console.error("Error saving bill:", error);
+                    showError(null, "Error saving bill. Please try again.");
+                    
+                    // Revert local changes if save failed
+                    currentBill.forEach(billItem => {
+                        const inventoryItem = groceryItems.find(i => i.id === billItem.id);
+                        if (inventoryItem) {
+                            inventoryItem.quantity += billItem.quantity;
+                        }
+                    });
+                    renderTable();
+                    renderBillItemsList();
+                })
+                .finally(() => {
+                    saveBillBtn.disabled = false;
+                    saveBillBtn.textContent = "Save Bill";
+                });
         }
         
         // Inventory Management Functions
