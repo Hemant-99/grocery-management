@@ -83,6 +83,7 @@
             border-radius: 8px;
             font-size: 1rem;
             -webkit-appearance: none;
+            appearance: none;
         }
         
         button {
@@ -576,6 +577,180 @@
         #printSection {
             display: none;
         }
+
+        /* Mobile Bill Popup Styles */
+        .mobile-bill-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .mobile-bill-popup.hidden {
+            display: none;
+        }
+        
+        .mobile-bill-content {
+            background-color: white;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        
+        .mobile-bill-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            text-align: center;
+        }
+        
+        .mobile-bill-header h3 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .mobile-bill-header p {
+            margin: 0 0 5px 0;
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .mobile-bill-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .close-mobile-bill {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+        }
+        
+        .mobile-bill-body {
+            padding: 15px;
+        }
+        
+        .mobile-bill-customer {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .mobile-bill-customer p {
+            margin: 5px 0;
+        }
+        
+        .mobile-bill-items {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        
+        .mobile-bill-items th {
+            text-align: left;
+            padding: 8px 5px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        
+        .mobile-bill-items td {
+            padding: 8px 5px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .mobile-bill-items td:nth-child(2),
+        .mobile-bill-items td:nth-child(3),
+        .mobile-bill-items td:nth-child(4) {
+            text-align: right;
+        }
+        
+        .mobile-bill-footer {
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .mobile-bill-total {
+            text-align: right;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 15px;
+            padding-top: 10px;
+            border-top: 2px solid #333;
+        }
+        
+        .mobile-bill-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .mobile-bill-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        #printMobileBill {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        #closeMobileBill {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .mobile-bill-thanks {
+            text-align: center;
+            font-style: italic;
+            color: #666;
+            font-size: 13px;
+        }
+        
+        @media (max-width: 480px) {
+            .mobile-bill-content {
+                font-size: 12px;
+            }
+            
+            .mobile-bill-header h3 {
+                font-size: 16px;
+            }
+            
+            .mobile-bill-items th,
+            .mobile-bill-items td {
+                padding: 5px 3px;
+            }
+            
+            .mobile-bill-total {
+                font-size: 14px;
+            }
+        }
         
         /* Mobile-specific adjustments */
         @media (max-width: 480px) {
@@ -795,6 +970,49 @@
         </div>
     </div>
 
+    <!-- Mobile Bill Popup -->
+    <div id="mobileBillPopup" class="mobile-bill-popup hidden">
+        <div class="mobile-bill-content">
+            <div class="mobile-bill-header">
+                <h3 id="mobileBillStoreName"></h3>
+                <p id="mobileBillStoreInfo"></p>
+                <div class="mobile-bill-meta">
+                    <span id="mobileBillDate"></span>
+                    <span id="mobileBillTime"></span>
+                </div>
+                <button class="close-mobile-bill">&times;</button>
+            </div>
+            <div class="mobile-bill-body">
+                <div id="mobileBillCustomer" class="mobile-bill-customer hidden"></div>
+                <table class="mobile-bill-items">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mobileBillItems">
+                        <!-- Bill items will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mobile-bill-footer">
+                <div class="mobile-bill-total">
+                    Total: ₹<span id="mobileBillTotal">0.00</span>
+                </div>
+                <div class="mobile-bill-actions">
+                    <button id="printMobileBill">Print</button>
+                    <button id="closeMobileBill">Close</button>
+                </div>
+                <div class="mobile-bill-thanks">
+                    Thank you for shopping with us!
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Print Section (hidden) -->
     <div id="printSection" style="display: none;"></div>
 
@@ -805,7 +1023,7 @@
             authDomain: "rk-store-5bf7a.firebaseapp.com",
             databaseURL: "https://rk-store-5bf7a-default-rtdb.firebaseio.com",
             projectId: "rk-store-5bf7a",
-            storageBucket: "rk-store-5bf7a.firebasestorage.app",
+            storageBucket: "rk-store-5bf7a.appspot.com",
             messagingSenderId: "927163081383",
             appId: "1:927163081383:web:7e81ec1eab8511229d3182",
             measurementId: "G-2NN2BRFPMF"
@@ -884,6 +1102,9 @@
         const signupPasswordInput = document.getElementById('signupPassword');
         const signupPasswordFeedback = document.getElementById('signupPasswordFeedback');
 
+        // Mobile bill popup elements
+        const mobileBillPopup = document.getElementById('mobileBillPopup');
+
         // Event Listeners
         showSignup.addEventListener('click', (e) => {
             e.preventDefault();
@@ -928,6 +1149,9 @@
         window.addEventListener('click', (event) => {
             if (event.target === customerModal) {
                 customerModal.style.display = 'none';
+            }
+            if (event.target === mobileBillPopup) {
+                mobileBillPopup.classList.add('hidden');
             }
         });
 
@@ -977,7 +1201,7 @@
                                /[a-zA-Z]/.test(signupPasswordInput.value) && 
                                /[0-9]/.test(signupPasswordInput.value);
             const storeNameValid = storeNameInput.value.trim().length > 0;
-            const emailValid = signupEmail.value.includes('@');
+            const emailValid = document.getElementById('signupEmail').value.includes('@');
             
             signupBtn.disabled = !(passwordValid && storeNameValid && emailValid);
         }
@@ -1477,55 +1701,7 @@
             database.ref('users/' + currentUser.uid + '/bills/' + billId).once('value')
                 .then(snapshot => {
                     const bill = snapshot.val();
-                    let billDetails = `
-                        <h2>Bill Details (${new Date(bill.date).toLocaleString()})</h2>
-                        <h3>${bill.storeName}</h3>
-                        ${bill.customer ? `<p><strong>Customer:</strong> ${bill.customer.name}</p>` : ''}
-                        <hr>
-                        <table style="width:100%; border-collapse: collapse; margin: 10px 0;">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Qty</th>
-                                    <th>Unit</th>
-                                    <th>Price</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
-                    
-                    bill.items.forEach(item => {
-                        billDetails += `
-                            <tr>
-                                <td>${item.name}</td>
-                                <td>${item.quantity}</td>
-                                <td>${item.unit}</td>
-                                <td>₹${item.price.toFixed(2)}</td>
-                                <td>₹${(item.price * item.quantity).toFixed(2)}</td>
-                            </tr>
-                        `;
-                    });
-                    
-                    billDetails += `
-                            </tbody>
-                        </table>
-                        <hr>
-                        <h3>Total: ₹${bill.total.toFixed(2)}</h3>
-                        <button onclick="reprintBill('${billId}')">Reprint</button>
-                    `;
-                    
-                    // Create a modal to show details
-                    const modal = document.createElement('div');
-                    modal.className = 'modal';
-                    modal.style.display = 'block';
-                    modal.innerHTML = `
-                        <div class="modal-content" style="max-width: 800px;">
-                            <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
-                            ${billDetails}
-                        </div>
-                    `;
-                    document.body.appendChild(modal);
+                    showMobileBill(bill);
                 });
         }
         
@@ -1553,7 +1729,74 @@
                 customer: currentCustomer || null
             };
             
-            printBillContent(billData);
+            showMobileBill(billData);
+        }
+        
+        function showMobileBill(billData) {
+            const popup = document.getElementById('mobileBillPopup');
+            const storeName = document.getElementById('mobileBillStoreName');
+            const storeInfo = document.getElementById('mobileBillStoreInfo');
+            const billDate = document.getElementById('mobileBillDate');
+            const billTime = document.getElementById('mobileBillTime');
+            const customerInfo = document.getElementById('mobileBillCustomer');
+            const billItems = document.getElementById('mobileBillItems');
+            const billTotal = document.getElementById('mobileBillTotal');
+            
+            // Set store info
+            storeName.textContent = billData.storeName || 'My Store';
+            storeInfo.textContent = `${billData.storeAddress || ''} ${billData.storePhone ? `| ${billData.storePhone}` : ''}`;
+            
+            // Set date and time
+            const now = billData.date ? new Date(billData.date) : new Date();
+            billDate.textContent = now.toLocaleDateString();
+            billTime.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Set customer info if available
+            if (billData.customer) {
+                customerInfo.innerHTML = `
+                    <p><strong>Customer:</strong> ${billData.customer.name}</p>
+                    ${billData.customer.phone ? `<p><strong>Phone:</strong> ${billData.customer.phone}</p>` : ''}
+                `;
+                customerInfo.classList.remove('hidden');
+            } else {
+                customerInfo.classList.add('hidden');
+            }
+            
+            // Clear previous items
+            billItems.innerHTML = '';
+            
+            // Add items to bill
+            if (billData.items && billData.items.length > 0) {
+                billData.items.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td>${item.quantity}${item.unit}</td>
+                        <td>₹${item.price.toFixed(2)}</td>
+                        <td>₹${(item.price * item.quantity).toFixed(2)}</td>
+                    `;
+                    billItems.appendChild(row);
+                });
+            }
+            
+            // Set total
+            billTotal.textContent = billData.total ? billData.total.toFixed(2) : '0.00';
+            
+            // Show popup
+            popup.classList.remove('hidden');
+            
+            // Add event listeners to buttons
+            document.getElementById('printMobileBill').onclick = function() {
+                printBillContent(billData);
+            };
+            
+            document.getElementById('closeMobileBill').onclick = function() {
+                popup.classList.add('hidden');
+            };
+            
+            document.querySelector('.close-mobile-bill').onclick = function() {
+                popup.classList.add('hidden');
+            };
         }
         
         function printBillContent(billData) {
@@ -1630,6 +1873,7 @@
             setTimeout(() => {
                 window.print();
                 printSection.style.display = 'none';
+                mobileBillPopup.classList.add('hidden');
             }, 100);
         }
         
